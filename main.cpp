@@ -2,6 +2,7 @@
 #include <functional>
 #include <optional>
 #include <iostream>
+#include <stdexcept>
 
 template <typename K, typename V>
 class BinarySearchTree{
@@ -20,17 +21,16 @@ public:
 			this->value = node.value;
 		}
 
-		Node(K key, V value) : key(key), value(value){
+		Node(K key, V value)
+			: key(key), value(value){}
 
-		}
-
-		bool isLeft(){
+		bool isLeft() const {
 			if(this->parent)
 				return this->parent->left == this;
 			return false;
 		}
 
-		bool isRight(){
+		bool isRight() const {
 			if(this->parent)
 				return this->parent->right == this;
 			return false;
@@ -55,71 +55,6 @@ private:
 		return current;
 	}
 
-public:
-
-	BinarySearchTree(const std::function<int(K,K)> &cmp) : cmp(cmp){
-
-	}
-
-	void insert(const Node &node){
-		if(root == nullptr){
-			root = new Node(node);
-			return;
-		}
-
-		Node *current = root;
-		while(true){
-			if(cmp(current->key, node.key) > 0){
-				if(current->left == nullptr){
-					current->left = new Node(node);
-					current->left->parent = current;
-					break;
-				}
-
-				current = current->left;
-			}
-			else if(cmp(current->key, node.key) < 0){
-				if(current->right == nullptr){
-					current->right = new Node(node);
-					current->right->parent = current;
-					break;
-				}
-
-				current = current->right;
-			}
-			else{
-				current->value = node.value;
-				break;
-			}
-		}
-	}
-
-	std::optional<Node> search(K key){
-		if(root == nullptr){
-			return std::nullopt;
-		}
-
-		Node *current = root;
-		while(true){
-			if(cmp(current->key, key) > 0){
-				if(current->left == nullptr){
-					return std::nullopt;
-				}
-
-				current = current->left;
-			}
-			else if(cmp(current->key, key) < 0){
-				if(current->right == nullptr){
-					return std::nullopt;
-				}
-
-				current = current->right;
-			}
-			else{
-				return *current;
-			}
-		}
-	}
 
 	void removeNode(Node *node){
 		if(node->left == nullptr && node->right == nullptr){
@@ -152,40 +87,231 @@ public:
 		}
 	}
 
-	void remove(K key){
-		if(root == nullptr){
-			return;
+	Node* searchNode(K key) const {
+		if(this->root == nullptr){
+			return nullptr;
 		}
 
-		Node *current = root;
+		Node *current = this->root;
 		while(true){
 			if(cmp(current->key, key) > 0){
 				if(current->left == nullptr){
-					return;
+					return nullptr;
 				}
 
 				current = current->left;
 			}
 			else if(cmp(current->key, key) < 0){
 				if(current->right == nullptr){
-					return;
+					return nullptr;
 				}
 
 				current = current->right;
 			}
 			else{
+				return *current;
+			}
+		}
+	}
+
+
+public:
+
+	BinarySearchTree(const std::function<int(K,K)> &cmp) : cmp(cmp){
+
+	}
+
+	void insert(const Node &node){
+		if(this->root == nullptr){
+			this->root = new Node(node);
+			return;
+		}
+
+		Node *current = this->root;
+		while(true){
+			if(cmp(current->key, node.key) > 0){
+				if(current->left == nullptr){
+					current->left = new Node(node);
+					current->left->parent = current;
+					break;
+				}
+
+				current = current->left;
+			}
+			else if(cmp(current->key, node.key) < 0){
+				if(current->right == nullptr){
+					current->right = new Node(node);
+					current->right->parent = current;
+					break;
+				}
+
+				current = current->right;
+			}
+			else{
+				current->value = node.value;
 				break;
 			}
 		}
+	}
 
-		removeNode(current);
+	std::optional<Node> search(K key) const {
+		Node *found = searchNode(key);
+		if(found) return found;
+		else return std::nullopt;
+	}
+
+	void remove(K key){
+		Node *found = searchNode(key);		
+
+		if(!found) throw std::logic_error("key not found");
+
+		removeNode(found);
 	}
 
 
 };
 
+
+template <typename K, typename V>
+class Heap {
+public:
+	struct Node{
+		K key;
+		V value;
+
+		Node(const Node &node){
+			this->key = node.key;
+			this->value = node.value;
+		}
+
+		Node(K key, V value)
+			: key(key), value(value){}
+
+		void operator=(const Node &node){
+			this->key = node.key;
+			this->value = node.value;
+		}
+
+
+	};
+
+private:
+	std::optional<Node> *heap;
+	int size = 0;
+	int capacity = 0;
+
+	const std::function<int(K,K)> cmp;
+
+
+	int parentIndex(int index) const {
+		if(index == 0) return -1;
+		return (index - 1) / 2;
+	}
+
+	int leftChildIndex(int index) const {
+		int ret = index * 2 + 1;
+		if(ret < size) return ret;
+		else return -1;
+	}
+
+	int rightChildIndex(int index) const {
+		int ret = index * 2 + 2;
+		if(ret < size) return ret;
+		else return -1;
+	}
+
+
+    void swap(int i, int j){
+		Node t = heap[i].value();
+		heap[i] = heap[j];
+		heap[j] = t;
+	}
+
+	bool ok(int index){
+		return		(parentIndex(index)		== -1 || cmp(heap[parentIndex(index)].value().key,		heap[index].value().key) < 0 )
+				 && (leftChildIndex(index)	== -1 || cmp(heap[leftChildIndex(index)].value().key,	heap[index].value().key) > 0)
+				 && (rightChildIndex(index)	== -1 || cmp(heap[rightChildIndex(index)].value().key,	heap[index].value().key) > 0 );
+	}
+
+	void sink(int index){
+		while(!ok(index)){
+			int newIndex = -1;
+			if(rightChildIndex(index) == -1){
+				newIndex = leftChildIndex(index);
+			}else{
+				if(cmp(heap[leftChildIndex(index)].value().key, heap[rightChildIndex(index)].value().key) < 0){
+					newIndex = leftChildIndex(index);
+				}else{
+					newIndex = rightChildIndex(index);
+				}
+			}
+
+
+			swap(newIndex, index);
+			index = newIndex;
+		}		
+	}
+
+	void swim(int index){
+		while(!ok(index)){
+			swap(parentIndex(index), index);
+			index = parentIndex(index);
+		}
+	}
+
+
+public:
+	Heap(int capacity, const std::function<int(K,K)> cmp) : capacity(capacity), cmp(cmp) {
+		heap = new std::optional<Node>[capacity];
+		size = 0;
+	}
+	
+
+	void insert(const Node& node){
+		if(this->size == this->capacity) throw std::length_error("heap is full");
+		heap[size++] = node;
+
+		swim(size - 1);
+	}
+	
+	
+	Node extractMin(){
+		if(size == 0) throw std::out_of_range("size is 0");
+		Node ret(heap[0].value());
+		heap[0] = heap[size - 1];
+		size--;
+
+		this->sink(0);
+
+		return ret;
+	}
+
+	int getSize(){
+		return this->size;
+	}
+	
+};
+
+
+
 int main(){
 	BinarySearchTree<int, int> bst( [](int a, int b){return a - b;} );
+	Heap<int,int> heap(10,  [](int a, int b){return a - b;} );
+
+	Heap<int, int>::Node node4(4,4); heap.insert(node4);
+	Heap<int, int>::Node node9(9,9); heap.insert(node9);
+	Heap<int, int>::Node node3(3,3); heap.insert(node3);
+	Heap<int, int>::Node node6(6,6); heap.insert(node6);
+	Heap<int, int>::Node node10(10,10); heap.insert(node10);
+	Heap<int, int>::Node node1(1,1); heap.insert(node1);
+	Heap<int, int>::Node node5(5,5); heap.insert(node5);
+	Heap<int, int>::Node node2(2,2); heap.insert(node2);
+	Heap<int, int>::Node node7(7,7); heap.insert(node7);
+	Heap<int, int>::Node node8(8,8); heap.insert(node8);
+
+	while(heap.getSize() > 0){
+		std::cout << heap.extractMin().key << std::endl;
+	}
 
 
 	return 0;
