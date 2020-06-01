@@ -117,11 +117,10 @@ private:
 
 public:
 
-	BinarySearchTree(const std::function<int(K,K)> &cmp) : cmp(cmp){
+	BinarySearchTree(const std::function<int(K,K)> &cmp)
+		: cmp(cmp){}
 
-	}
-
-	void insert(const Node &node){
+	void add(const Node &node){
 		if(this->root == nullptr){
 			this->root = new Node(node);
 			return;
@@ -227,7 +226,7 @@ private:
 		heap[j] = t;
 	}
 
-	bool ok(int index){
+	bool ok(int index){//true if position of element at index is right
 		return		(parentIndex(index)		== -1 || cmp(heap[parentIndex(index)].value().key,		heap[index].value().key) < 0 )
 				 && (leftChildIndex(index)	== -1 || cmp(heap[leftChildIndex(index)].value().key,	heap[index].value().key) > 0)
 				 && (rightChildIndex(index)	== -1 || cmp(heap[rightChildIndex(index)].value().key,	heap[index].value().key) > 0 );
@@ -261,13 +260,13 @@ private:
 
 
 public:
-	Heap(int capacity, const std::function<int(K,K)> cmp) : capacity(capacity), cmp(cmp) {
+	Heap(int capacity, const std::function<int(K,K)> &cmp) : capacity(capacity), cmp(cmp) {
 		heap = new std::optional<Node>[capacity];
 		size = 0;
 	}
 	
 
-	void insert(const Node& node){
+	void add(const Node &node){
 		if(this->size == this->capacity) throw std::length_error("heap is full");
 		heap[size++] = node;
 
@@ -275,7 +274,7 @@ public:
 	}
 	
 	
-	Node extractMin(){
+	Node poll(){
 		if(size == 0) throw std::out_of_range("size is 0");
 		Node ret(heap[0].value());
 		heap[0] = heap[size - 1];
@@ -286,7 +285,13 @@ public:
 		return ret;
 	}
 
-	int getSize(){
+	Node peek(){
+		if(size == 0) throw std::out_of_range("size is 0");
+
+		return heap[0].value();
+	}
+
+	int getSize() const {
 		return this->size;
 	}
 	
@@ -298,19 +303,19 @@ int main(){
 	BinarySearchTree<int, int> bst( [](int a, int b){return a - b;} );
 	Heap<int,int> heap(10,  [](int a, int b){return a - b;} );
 
-	Heap<int, int>::Node node4(4,4); heap.insert(node4);
-	Heap<int, int>::Node node9(9,9); heap.insert(node9);
-	Heap<int, int>::Node node3(3,3); heap.insert(node3);
-	Heap<int, int>::Node node6(6,6); heap.insert(node6);
-	Heap<int, int>::Node node10(10,10); heap.insert(node10);
-	Heap<int, int>::Node node1(1,1); heap.insert(node1);
-	Heap<int, int>::Node node5(5,5); heap.insert(node5);
-	Heap<int, int>::Node node2(2,2); heap.insert(node2);
-	Heap<int, int>::Node node7(7,7); heap.insert(node7);
-	Heap<int, int>::Node node8(8,8); heap.insert(node8);
+	Heap<int, int>::Node node4(4,4); heap.add(node4);
+	Heap<int, int>::Node node9(9,9); heap.add(node9);
+	Heap<int, int>::Node node3(3,3); heap.add(node3);
+	Heap<int, int>::Node node6(6,6); heap.add(node6);
+	Heap<int, int>::Node node10(10,10); heap.add(node10);
+	Heap<int, int>::Node node1(1,1); heap.add(node1);
+	Heap<int, int>::Node node5(5,5); heap.add(node5);
+	Heap<int, int>::Node node2(2,2); heap.add(node2);
+	Heap<int, int>::Node node7(7,7); heap.add(node7);
+	Heap<int, int>::Node node8(8,8); heap.add(node8);
 
 	while(heap.getSize() > 0){
-		std::cout << heap.extractMin().key << std::endl;
+		std::cout << heap.poll().key << std::endl;
 	}
 
 
