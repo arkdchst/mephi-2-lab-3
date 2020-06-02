@@ -3,6 +3,7 @@
 #include <optional>
 #include <iostream>
 #include <stdexcept>
+#include <string>
 
 template <typename K, typename V>
 class BinarySearchTree{
@@ -258,6 +259,28 @@ private:
 		}
 	}
 
+	std::string toString(std::string format, int index) const {
+		if(index >= this->size || index == -1) return "";
+
+		std::string out;
+		for(int i = 0; i < format.size(); i++){
+			if(format[i] == 'K'){//root
+				out += std::to_string(heap[index].value().key);
+			}
+			else if(format[i] == 'L'){
+				out += toString(format, leftChildIndex(index));
+			}
+			else if(format[i] == 'R'){
+				out += toString(format, rightChildIndex(index));
+			}
+			else{
+				out += format[i];
+			}
+		}
+
+		return out;
+	}
+
 
 public:
 	Heap(int capacity, const std::function<int(K,K)> &cmp) : capacity(capacity), cmp(cmp) {
@@ -295,8 +318,11 @@ public:
 		return this->size;
 	}
 	
-};
+	std::string toString(std::string format) const {
+		return toString(format, 0);
+	}
 
+};
 
 
 int main(){
@@ -313,6 +339,8 @@ int main(){
 	Heap<int, int>::Node node2(2,2); heap.add(node2);
 	Heap<int, int>::Node node7(7,7); heap.add(node7);
 	Heap<int, int>::Node node8(8,8); heap.add(node8);
+
+	std::cout << heap.toString("K:(L)(R)") << std::endl;
 
 	while(heap.getSize() > 0){
 		std::cout << heap.poll().key << std::endl;
