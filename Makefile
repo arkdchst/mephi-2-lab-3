@@ -1,4 +1,4 @@
-all: main
+all: tests
 
-main: main.cpp
-	g++ main.cpp -o main -std=c++17
+tests: tests.cpp bst.h heap.h
+	g++ tests.cpp -o tests -std=c++17
