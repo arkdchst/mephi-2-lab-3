@@ -46,7 +46,7 @@ private:
 	Node *root = nullptr;
 	const std::function<int(K,K)> cmp;
 
-	Node *getMinNode(Node *start){
+	Node* getMinNode(Node *start){
 		Node *current = start;
 		while(current->left)
 			current = current->left;
@@ -70,12 +70,9 @@ private:
 			delete node;
 		}
 		else if(node->left != nullptr && node->right == nullptr){
-			if(node->isLeft())	node->parent->left = node->left;
-			if(node->isRight())	node->parent->right = node->left;
-			else{
-				node->left->parent = nullptr;
-				this->root = node->left;
-			}
+			if(node->isLeft())			node->parent->left = node->left;
+			else if(node->isRight())	node->parent->right = node->left;
+			else this->root = node->left;
 			node->left->parent = node->parent;
 			delete node;
 		}
@@ -119,6 +116,21 @@ public:
 	BinarySearchTree(const std::function<int(K,K)> &cmp)
 		: cmp(cmp){}
 
+	~BinarySearchTree(){
+		Node *current = this->root;
+		while(current){
+			if(current->left)		current = current->left;
+			else if(current->right)	current = current->right;
+			else{
+				if(current->isLeft())		current->parent->left = nullptr;
+				else if(current->isRight())	current->parent->right = nullptr;
+
+				delete current;
+				current = current->parent;
+			}
+		}
+	}
+
 	void add(const Node &node){
 		if(this->root == nullptr){
 			this->root = new Node(node);
@@ -155,12 +167,12 @@ public:
 	std::optional<Node> search(K key) const {
 		Node *found = searchNode(key);
 		if(found) return *found;
-		else return std::nullopt;
+		
+		return std::nullopt;
 	}
 
 	void remove(K key){
 		Node *found = searchNode(key);		
-
 		if(!found) throw std::logic_error("key not found");
 
 		removeNode(found);

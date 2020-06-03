@@ -118,10 +118,14 @@ private:
 
 public:
 	Heap(int capacity, const std::function<int(K,K)> &cmp) : capacity(capacity), cmp(cmp) {
-		heap = new std::optional<Node>[capacity];
-		size = 0;
+		this->heap = new std::optional<Node>[capacity];
+		this->size = 0;
 	}
 	
+	virtual ~Heap(){
+		delete[] this->heap;
+		this->size = 0;
+	}
 
 	void add(const Node &node){
 		if(this->size == this->capacity) throw std::length_error("heap is full");
