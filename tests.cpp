@@ -48,18 +48,26 @@ BOOST_AUTO_TEST_CASE(heap_test){
 		heap.add(node);
 	}
 
+	for(int i = 0; i < COUNT; i++){
+		std::optional<Heap::Node> node = heap.search(i);
+		BOOST_TEST(node.has_value());
+		if(node.has_value())
+			BOOST_TEST(node.value().value == i + 1);
+	}
+	BOOST_TEST(!heap.search(COUNT).has_value());
+
 	BOOST_TEST(heap.getSize() == COUNT);
 
 	BOOST_CHECK_THROW(heap.add(Heap::Node(-1,0)), std::exception);
 
 	for(int i = 0; i < COUNT; i++){
 		Heap::Node nodeOnTop = heap.peek();
-		Heap::Node node = heap.poll();
+		Heap::Node node = heap.pop();
 
 		BOOST_TEST((nodeOnTop == node));
 		BOOST_TEST(node.value == i + 1);
 	}
 
-	BOOST_CHECK_THROW(heap.poll(), std::exception);
+	BOOST_CHECK_THROW(heap.pop(), std::exception);
 	BOOST_TEST(heap.getSize() == 0);
 }

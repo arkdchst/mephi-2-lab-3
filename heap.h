@@ -38,20 +38,40 @@ private:
 
 
 	int parentIndex(int index) const {
+		if(index == -1) return -1;
+
 		if(index == 0) return -1;
 		return (index - 1) / 2;
 	}
 
 	int leftChildIndex(int index) const {
+		if(index == -1) return -1;
+
 		int ret = index * 2 + 1;
 		if(ret < size) return ret;
-		else return -1;
+		return -1;
 	}
 
 	int rightChildIndex(int index) const {
+		if(index == -1) return -1;
+
 		int ret = index * 2 + 2;
 		if(ret < size) return ret;
-		else return -1;
+		return -1;
+	}
+
+	bool isLeft(int index) const {
+		if(index == -1) return false;
+
+		int parent = this->parentIndex(index);
+		return this->leftChildIndex(parent) == index;
+	}
+
+	bool isRight(int index) const {
+		if(index == -1) return false;
+
+		int parent = this->parentIndex(index);
+		return this->rightChildIndex(parent) == index;
 	}
 
 
@@ -62,9 +82,9 @@ private:
 	}
 
 	bool ok(int index){//true if position of element at index is right
-		return		(parentIndex(index)		== -1 || cmp(heap[parentIndex(index)].value().key,		heap[index].value().key) < 0 )
-				 && (leftChildIndex(index)	== -1 || cmp(heap[leftChildIndex(index)].value().key,	heap[index].value().key) > 0)
-				 && (rightChildIndex(index)	== -1 || cmp(heap[rightChildIndex(index)].value().key,	heap[index].value().key) > 0 );
+		return		(parentIndex(index)		== -1 || cmp(heap[parentIndex(index)].value().key,		heap[index].value().key) <= 0)
+				 && (leftChildIndex(index)	== -1 || cmp(heap[leftChildIndex(index)].value().key,	heap[index].value().key) >= 0)
+				 && (rightChildIndex(index)	== -1 || cmp(heap[rightChildIndex(index)].value().key,	heap[index].value().key) >= 0);
 	}
 
 	void sink(int index){
@@ -115,6 +135,52 @@ private:
 		return out;
 	}
 
+	int searchNode(K key){
+		int current = 0;
+		
+		enum {LEFT, RIGHT, PARENT} dir = LEFT;
+
+		while(current != -1 && current < size){
+			if(cmp(heap[current].value().key, key) == 0)
+				return current;
+			if(leftChildIndex(current) == -1 && rightChildIndex(current) == -1 || cmp(heap[current].value().key, key) > 0)
+				dir = PARENT;
+
+			if(dir == PARENT){
+				if(isLeft(current))
+					dir = RIGHT;
+				else if(isRight(current))
+					dir = PARENT;
+				current = parentIndex(current);
+				continue;
+			}
+
+			if(dir == LEFT){
+				if(leftChildIndex(current) != -1){
+					current = leftChildIndex(current);
+					dir = LEFT;
+					continue;
+				}
+				else{
+					dir = RIGHT;
+				}
+			}
+
+			if(dir == RIGHT){
+				if(rightChildIndex(current) != -1){
+					current = rightChildIndex(current);
+					dir = LEFT;
+					continue;
+				}
+				else{
+					dir = PARENT;
+				}
+			}
+		}
+
+		return -1;
+
+	}
 
 public:
 	Heap(int capacity, const std::function<int(K,K)> &cmp) : capacity(capacity), cmp(cmp) {
@@ -135,10 +201,11 @@ public:
 	}
 	
 	
-	Node poll(){
+	Node pop(){
 		if(size == 0) throw std::out_of_range("size is 0");
 		Node ret(heap[0].value());
 		heap[0] = heap[size - 1];
+		heap[size - 1].reset();
 		size--;
 
 		this->sink(0);
@@ -150,6 +217,14 @@ public:
 		if(size == 0) throw std::out_of_range("size is 0");
 
 		return heap[0].value();
+	}
+
+	std::optional<Node> search(K key){
+		int found = searchNode(key);
+		if(found != -1) return heap[found];
+		
+		return std::nullopt;
+
 	}
 
 	int getSize() const {

@@ -47,6 +47,8 @@ private:
 	const std::function<int(K,K)> cmp;
 
 	Node* getMinNode(Node *start){
+		if(!start) return nullptr;
+
 		Node *current = start;
 		while(current->left)
 			current = current->left;
@@ -84,23 +86,20 @@ private:
 	}
 
 	Node* searchNode(K key) const {
-		if(this->root == nullptr){
+		if(this->root == nullptr)
 			return nullptr;
-		}
 
 		Node *current = this->root;
 		while(true){
 			if(cmp(current->key, key) > 0){
-				if(current->left == nullptr){
+				if(current->left == nullptr)
 					return nullptr;
-				}
 
 				current = current->left;
 			}
 			else if(cmp(current->key, key) < 0){
-				if(current->right == nullptr){
+				if(current->right == nullptr)
 					return nullptr;
-				}
 
 				current = current->right;
 			}
@@ -125,8 +124,9 @@ public:
 				if(current->isLeft())		current->parent->left = nullptr;
 				else if(current->isRight())	current->parent->right = nullptr;
 
+				Node *parent = current->parent;
 				delete current;
-				current = current->parent;
+				current = parent;
 			}
 		}
 	}
