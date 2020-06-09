@@ -231,6 +231,10 @@ public:
 		return this->size;
 	}
 	
+	int getCapacity() const {
+		return this->capacity;
+	}
+
 	std::string toString(std::string format) const {
 		return toString(format, 0);
 	}
