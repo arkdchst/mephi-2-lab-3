@@ -60,9 +60,18 @@ BOOST_AUTO_TEST_CASE(heap_test){
 
 	BOOST_CHECK_THROW(heap.add(Heap::Node(-1,0)), std::exception);
 
+
+	int prev = 0;
 	for(int i = 0; i < COUNT; i++){
 		Heap::Node nodeOnTop = heap.peek();
 		Heap::Node node = heap.pop();
+		if(i == 0){
+			prev = node.value;
+		}
+		else{
+			BOOST_TEST(node.value >= prev);
+			prev = node.value;
+		}
 
 		BOOST_TEST((nodeOnTop == node));
 		BOOST_TEST(node.value == i + 1);
