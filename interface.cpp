@@ -24,7 +24,7 @@ int readInt(int from=std::numeric_limits<int>::min(), int to=std::numeric_limits
 		try{
 			std::string line;
 			std::getline(std::cin, line);
-			if(line.find_first_not_of("0123456789") != -1) throw std::exception();
+			if(line.empty()) throw std::exception();
 
 			int read = std::stoi(line);
 			if(read < from || read > to) throw std::exception();
