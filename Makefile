@@ -14,4 +14,4 @@ interface: interface.cpp bst.h heap.h
 	$(CMD) interface.cpp -o interface
 
 clean:
-	rm tests time_tests
+	rm tests time_tests interface
