@@ -101,39 +101,6 @@ void heap_test(){
 	}
 }
 
-void heap_pop_test(){
-	std::cout << "HEAP TEST STARTED" << std::endl;
-
-	typedef Heap<int,int> Heap;
-
-	int COUNT = 20000000;
-	int DC = 100;
-
-	Heap heap(COUNT, [](int a, int b){return a - b;});
-
-
-	srand(time(nullptr));
-	for(int i = 0; i < COUNT; i++){
-		int add = rand();
-		Heap::Node node(add, 0);
-		heap.add(node);
-	}
-
-
-	for(int i = 0; i < (COUNT - 15000000) / DC; i++){
-		auto t1 = std::chrono::system_clock::now();
-			for(int j = 0; j < DC; j++){
-				try{
-				heap.pop();
-				}catch(...){}
-			}
-		auto t2 = std::chrono::system_clock::now();
-
-		std::cout << "pop: " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << ",";
-		std::cout << COUNT - (i * DC + DC / 2) << std::endl;
-	}
-}
-
 
 int main(){
 	bst_test();
